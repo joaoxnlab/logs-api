@@ -1,10 +1,10 @@
 import express from "express";
 import * as Log from "../controller/controller";
 
-export const studentRouter = express.Router();
+export const router = express.Router();
 
-studentRouter.get('', Log.getAll);
-studentRouter.get('/:id', Log.get);
-studentRouter.post('', Log.post);
-studentRouter.put('/:id', Log.put);
-studentRouter.delete('/:id', Log.remove);
+router.get('', Log.getAll);
+router.get('/:id', Log.get);
+router.post('', Log.post);
+router.put('/:id', Log.put);
+router.delete('/:id', Log.remove);
