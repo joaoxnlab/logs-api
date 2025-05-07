@@ -1,6 +1,7 @@
 import {v4} from "uuid";
+import * as files from "../../utils/files";
 
-export { Raw, DTO, Database, Log };
+export { Raw, DTO, Database, Log, Entity };
 
 type Raw<T> =
     T extends Function ? never :
@@ -11,6 +12,45 @@ type Raw<T> =
                 T;
 
 type DTO<T> = Omit<Raw<T>, 'id'>;
+
+abstract class Entity {
+    uuid?: string;
+
+    abstract dbKey(): keyof Database;
+
+    protected constructor(id?: string) {
+        this.uuid = id;
+    }
+
+    async generateID() {
+        return v4();
+    }
+
+    async saveToDB() {
+        if (!this.uuid) throw new Error("ID is required to save the Entity to the Database");
+        const db = await files.read(files.DB_PATH, JSON.parse) as Database;
+        (db[this.dbKey()] as unknown as typeof this[]).push(this);
+
+        await files.write(files.DB_PATH, JSON.stringify(db));
+    }
+
+    async removeFromDB() {
+        if (!this.uuid) throw new Error("ID is required to remove the Entity from the Database");
+        return files.removeFromDB(this.uuid, this.dbKey());
+    }
+
+    static async fromObjectAsync(_object: Record<string, unknown>): Promise<Entity> {
+        throw new Error("Method not implemented! Use derived class")
+    }
+
+    static fromObject(_id: number, _obj: Record<string, unknown>) {
+        throw new Error("Method not implemented! Use derived class");
+    }
+
+    static assertValidDTO(_obj: unknown) {
+        throw new Error("Method not implemented! Use derived class");
+    }
+}
 
 class Log {
     uuid: string;
